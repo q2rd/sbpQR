@@ -23,5 +23,8 @@ go.work.sum
 
 # env file
 .env
+
+# directories
 app/.env
 app/tsl_certs
+internal/tsl_certs
