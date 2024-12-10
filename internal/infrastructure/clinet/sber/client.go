@@ -2,19 +2,20 @@ package sber
 
 import (
 	"fmt"
-	"github.com/q2rd/sbpQR/pkg/types"
-	"github.com/q2rd/sbpQR/pkg/utils"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
+
+	"github.com/q2rd/sbpQR/internal/config"
+	"github.com/q2rd/sbpQR/pkg/types"
+	"github.com/q2rd/sbpQR/pkg/utils"
 )
 
 // NewTokenRequest делает запрос для получения токена на указаную ручку. возвращает структуру bearer токен
 // и клинта с установленными сертификатами.
-func NewTokenRequest(scope string) (*types.TokenScopeResponse, *http.Client) {
+func NewTokenRequest(scope string, cfg *config.Config) (*types.TokenScopeResponse, *http.Client) {
 	const op = "NewTokenRequest"
 	form := url.Values{}
 	form.Add("grant_type", "client_credentials")
@@ -29,13 +30,13 @@ func NewTokenRequest(scope string) (*types.TokenScopeResponse, *http.Client) {
 		log.Fatalf("ошибка создания запроса: %s\n op: %s", err, op)
 	}
 
-	authCreds := fmt.Sprintf("Basic %s", utils.ToBase64(os.Getenv("CREDS")))
+	authCreds := fmt.Sprintf("Basic %s", utils.ToBase64(cfg.AppCredentials))
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Authorization", authCreds)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("rquid", utils.GenerateCleanUUID())
 
-	client := &http.Client{Transport: NewTransportWithCert()}
+	client := &http.Client{Transport: NewTransportWithCert(cfg)}
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatal("error making request", err)

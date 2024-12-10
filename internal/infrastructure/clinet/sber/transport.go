@@ -6,29 +6,29 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/q2rd/sbpQR/internal/config"
 )
 
 // NewTransportWithCert читает сертификатов клиента и сервера создает конфиг для tsl протакола.
 // возвращает транспорт с настроенным конфигом.
-func NewTransportWithCert() *http.Transport {
+func NewTransportWithCert(cfg *config.Config) *http.Transport {
 	const op = "NewTransportWithCert"
-	// чтнение сертификата + ключа
-	cert, err := tls.LoadX509KeyPair(os.Getenv("CLIENT_CERT"), os.Getenv("CLIENT_KEY"))
+
+	cert, err := tls.LoadX509KeyPair(cfg.ClientCertificate, cfg.ClientPrivateKey)
 	if err != nil {
-		log.Fatalf("ошибка загрузки сертификатов: %v\n op: %s", err, op)
+		log.Fatalf("err loadig client certificates: %v\n op: %s", err, op)
 	}
 
-	// чтение сертификата с сервера сбербанка
-	caCert, err := os.ReadFile(os.Getenv("SERVER_CERT"))
+	caCert, err := os.ReadFile(cfg.ServerCertificate)
 	if err != nil {
-		log.Fatalf("ошибка чтения сертификата минцифры: %v\n op: %s", err, op)
+		log.Fatalf("err loading server certificate: %v\n op: %s", err, op)
 	}
 	caCertPool := x509.NewCertPool()
 	if ok := caCertPool.AppendCertsFromPEM(caCert); !ok {
-		log.Fatalf("ошибка добовления сертификата минцифры в пул доверенных\n op: %s", op)
+		log.Fatalf("error appending certificates to the certificate pool\n op: %s", op)
 	}
 
-	// TLS клиент с сертификатами
 	tlsConfig := &tls.Config{
 		Certificates: []tls.Certificate{cert},
 		RootCAs:      caCertPool,

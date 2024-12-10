@@ -1,13 +1,16 @@
 package utils
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/q2rd/sbpQR/pkg/types"
 )
 
 // ReadJson декодирует тело ответа в данный тип.
@@ -33,4 +36,20 @@ func ToBase64(s string) string {
 func GenerateTimestamp() string {
 	currentTime := time.Now().UTC()
 	return currentTime.Format(time.RFC3339)
+}
+func CreateRequest(requestUID string, data []byte, requestType string, url string, token *types.TokenScopeResponse) (*http.Request, error) {
+
+	req, err := http.NewRequest(
+		"POST", url,
+		bytes.NewBuffer(data),
+	)
+	fmt.Println(req)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+token.AccessToken)
+	req.Header.Set("Accept", "*/*")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("RqUID", requestUID)
+	return req, nil
 }

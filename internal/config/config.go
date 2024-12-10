@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 
 	"github.com/joho/godotenv"
 )
@@ -14,10 +13,10 @@ type Config struct {
 	ClientCertificate string
 	ClientPrivateKey  string
 	ServerCertificate string
-	MemberID          int
-	SBPMemberID       int
+	MemberID          string
+	SBPMemberID       string
 	QrID              string
-	TID               int
+	TID               string
 }
 
 func LoadConfig() *Config {
@@ -29,10 +28,10 @@ func LoadConfig() *Config {
 		ClientCertificate: mustGetEnv("CLIENT_CERT"),
 		ClientPrivateKey:  mustGetEnv("CLIENT_KEY"),
 		ServerCertificate: mustGetEnv("SERVER_CERT"),
-		MemberID:          toIntValue(mustGetEnv("SBP_MEMBER_ID")),
-		SBPMemberID:       toIntValue(mustGetEnv("MEMBER_ID")),
+		MemberID:          mustGetEnv("MEMBER_ID"),
+		SBPMemberID:       mustGetEnv("SBP_MEMBER_ID"),
 		QrID:              mustGetEnv("QR_ID"),
-		TID:               toIntValue(mustGetEnv("TID")),
+		TID:               mustGetEnv("TID"),
 	}
 }
 
@@ -42,12 +41,4 @@ func mustGetEnv(key string) string {
 		log.Fatalf("Environment variable %s is not set", key)
 	}
 	return value
-}
-
-func toIntValue(val string) int {
-	i, err := strconv.Atoi(val)
-	if err != nil {
-		panic("recived wrng value type")
-	}
-	return i
 }
