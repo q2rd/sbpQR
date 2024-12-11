@@ -5,18 +5,18 @@ import (
 	"github.com/q2rd/sbpQR/pkg/utils"
 )
 
-type Order struct {
-	RequestUID       string           `json:"rq_uid"`
-	RequestCreatedAt string           `json:"rq_tm"`
-	MemberID         string           `json:"member_id"`
-	OrderUID         string           `json:"order_number"`
-	OrderCreatedAt   string           `json:"order_created_date"`
-	OrderParams      *[]OrderPosition `json:"order_params_type"`
-	QrID             string           `json:"id_qr"`
-	OrderSum         int              `json:"order_sum"`
-	Currency         string           `json:"currency"`
-	Description      string           `json:"description"`
-	SBPMemberID      string           `json:"sbp_member_id"`
+type OrderCreateReq struct {
+	RequestUID      string           `json:"rq_uid"`
+	RequestTime     string           `json:"rq_tm"`
+	MemberID        string           `json:"member_id"`
+	OrderNumber     string           `json:"order_number"`
+	OrderCreateDate string           `json:"order_create_date"`
+	OrderParams     []*OrderPosition `json:"order_params_type"`
+	IDQr            string           `json:"id_qr"`
+	OrderSum        int              `json:"order_sum"`
+	Currency        string           `json:"currency"`
+	Description     string           `json:"description"`
+	SbpMemberID     string           `json:"sbp_member_id"`
 }
 
 type OrderPosition struct {
@@ -26,25 +26,26 @@ type OrderPosition struct {
 	PositionDiscription string `json:"position_description"`
 }
 
-func (o *Order) GetSum() int {
+func (o *OrderCreateReq) GetSum() int {
 	var sum int
 	if o.OrderParams == nil {
 		return sum
 	}
 
-	for _, position := range *o.OrderParams {
+	for _, position := range o.OrderParams {
 		sum += position.PositionCount * position.PositionPrice
 	}
 	return sum
 }
-func GetMockOrder(cfg *config.Config) *Order {
-	order := &Order{
-		RequestUID:       utils.GenerateCleanUUID(),
-		RequestCreatedAt: utils.GenerateTimestamp(),
-		MemberID:         cfg.MemberID,
-		OrderUID:         "1",
-		OrderCreatedAt:   utils.GenerateTimestamp(),
-		OrderParams: &[]OrderPosition{
+
+func GetMockOrder(cfg *config.Config) *OrderCreateReq {
+	order := &OrderCreateReq{
+		RequestUID:      utils.GenerateCleanUUID(),
+		RequestTime:     utils.GenerateTimestamp(),
+		MemberID:        cfg.MemberID,
+		OrderNumber:     "1",
+		OrderCreateDate: utils.GenerateTimestamp(),
+		OrderParams: []*OrderPosition{
 			{
 				PositionName:        "parking_place",
 				PositionCount:       2,
@@ -52,11 +53,25 @@ func GetMockOrder(cfg *config.Config) *Order {
 				PositionDiscription: "порковочное место автомобиля.",
 			},
 		},
-		QrID:        cfg.TID,
+		IDQr:        cfg.TID,
 		Currency:    "643",
 		Description: "test order",
-		SBPMemberID: cfg.SBPMemberID,
+		SbpMemberID: cfg.SBPMemberID,
 	}
 	order.OrderSum = order.GetSum()
 	return order
+}
+
+type OrderStatusReq struct {
+	RequestUID  string `json:"rq_uid"`
+	RequestTime string `json:"rq_tm"`
+	SberOrdeID  string `json:"order_id"`
+	TID         string `json:"tid"`
+	CRMOrderID  string `json:"partner_order_number"`
+}
+
+type OrderRevocationReq struct {
+	RequestUID  string `json:"rq_uid"`
+	RequestTime string `json:"rq_tm"`
+	OrderID     string `json:"order_id"`
 }

@@ -43,7 +43,7 @@ func CreateRequest(requestUID string, data []byte, requestType string, url strin
 		"POST", url,
 		bytes.NewBuffer(data),
 	)
-	fmt.Println(req)
+	// fmt.Println(req)
 	if err != nil {
 		return nil, err
 	}
